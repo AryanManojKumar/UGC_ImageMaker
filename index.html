@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGC Image Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .upload-section {
+            margin-bottom: 20px;
+        }
+
+        .upload-box {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .upload-box:hover {
+            background: #f5f7ff;
+            border-color: #764ba2;
+        }
+
+        .upload-box.has-file {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .upload-box label {
+            display: block;
+            cursor: pointer;
+        }
+
+        .upload-box input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .file-name {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .chat-history {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .message.user {
+            background: #e3f2fd;
+            margin-left: 20px;
+        }
+
+        .message.assistant {
+            background: #f5f5f5;
+            margin-right: 20px;
+        }
+
+        .message-role {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .message-content {
+            line-height: 1.5;
+        }
+
+        .result-section {
+            margin-top: 20px;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .image-card {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: #f5f5f5;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .image-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .generated-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .feedback-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2em;
+        }
+
+        .feedback-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .feedback-btn.active {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .feedback-btn.active.thumbs-down {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .trace-link {
+            margin-top: 10px;
+            padding: 8px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .trace-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .trace-link a:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-badge.success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-badge.error {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 UGC Image Generator</h1>
+            <p>Create authentic user-generated content images with AI</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel: Input -->
+            <div class="card">
+                <h2>📤 Upload & Generate</h2>
+
+                <div class="upload-section">
+                    <div class="upload-box" id="personUploadBox">
+                        <label for="personImage">
+                            <div class="upload-icon">👤</div>
+                            <div>Click to upload person image</div>
+                            <div class="file-name" id="personFileName"></div>
+                        </label>
+                        <input type="file" id="personImage" accept="image/*">
+                        <img class="preview-image" id="personPreview" alt="Person preview">
+                    </div>
+
+                    <div class="upload-box" id="productUploadBox">
+                        <label for="productImage">
+                            <div class="upload-icon">📦</div>
+                            <div>Click to upload product image</div>
+                            <div class="file-name" id="productFileName"></div>
+                        </label>
+                        <input type="file" id="productImage" accept="image/*">
+                        <img class="preview-image" id="productPreview" alt="Product preview">
+                    </div>
+                </div>
+
+                <div>
+                    <textarea 
+                        id="messageInput" 
+                        class="message-input" 
+                        placeholder="Enter your message... (e.g., 'Generate UGC images where the person is happily showing the product')"
+                    ></textarea>
+                </div>
+
+                <button class="button" id="generateBtn" onclick="generateImage()">
+                    Generate 4 UGC Images
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Generating 4 diverse UGC images...</p>
+                    <p style="font-size: 0.9em; margin-top: 5px;">This may take 30-60 seconds</p>
+                </div>
+            </div>
+
+            <!-- Right Panel: Output -->
+            <div class="card">
+                <h2>💬 Chat & Results</h2>
+
+                <div class="chat-history" id="chatHistory">
+                    <div style="text-align: center; color: #999; padding: 20px;">
+                        No messages yet. Upload images and start generating!
+                    </div>
+                </div>
+
+                <div class="result-section" id="resultSection" style="display: none;">
+                    <h3>Generated Images (4 Variants):</h3>
+                    <div class="images-grid" id="imagesGrid">
+                        <!-- Images will be inserted here -->
+                    </div>
+
+                    <div class="feedback-buttons">
+                        <button class="feedback-btn" id="thumbsUpBtn" onclick="submitFeedback('thumbs_up')">
+                            👍 Good
+                        </button>
+                        <button class="feedback-btn" id="thumbsDownBtn" onclick="submitFeedback('thumbs_down')">
+                            👎 Needs Work
+                        </button>
+                    </div>
+
+                    <div class="trace-link" id="traceLink" style="display: none;">
+                        🔍 <a href="#" target="_blank" id="traceLinkUrl">View trace in LangSmith</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversationId = null;
+        let currentRunId = null;
+        let personFile = null;
+        let productFile = null;
+
+        // API Base URL - change this to your server URL
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Handle file uploads with preview
+        document.getElementById('personImage').addEventListener('change', function(e) {
+            personFile = e.target.files[0];
+            handleFilePreview(personFile, 'personPreview', 'personFileName', 'personUploadBox');
+        });
+
+        document.getElementById('productImage').addEventListener('change', function(e) {
+            productFile = e.target.files[0];
+            handleFilePreview(productFile, 'productPreview', 'productFileName', 'productUploadBox');
+        });
+
+        function handleFilePreview(file, previewId, fileNameId, uploadBoxId) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+
+                document.getElementById(fileNameId).textContent = file.name;
+                document.getElementById(uploadBoxId).classList.add('has-file');
+            }
+        }
+
+        async function generateImage() {
+            const message = document.getElementById('messageInput').value;
+
+            if (!message.trim()) {
+                alert('Please enter a message');
+                return;
+            }
+
+            if (!personFile || !productFile) {
+                alert('Please upload both person and product images');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('generateBtn').disabled = true;
+
+            // Create FormData
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('person_image', personFile);
+            formData.append('product_image', productFile);
+            if (conversationId) {
+                formData.append('conversation_id', conversationId);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat/ugc/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Update conversation ID
+                conversationId = data.conversation_id;
+                currentRunId = extractRunIdFromTraceUrl(data.trace_url);
+
+                // Add user message to chat
+                addMessageToChat('user', message);
+
+                // Add assistant response
+                addMessageToChat('assistant', data.assistant_message);
+
+                // Show generated images if available (4 images)
+                if (data.generated_images && data.generated_images.length > 0) {
+                    showGeneratedImages(data.generated_images);
+                }
+
+                // Show trace link if available
+                if (data.trace_url) {
+                    showTraceLink(data.trace_url);
+                }
+
+                // Clear message input
+                document.getElementById('messageInput').value = '';
+
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToChat('error', `Error: ${error.message}`);
+            } finally {
+                // Hide loading
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        function addMessageToChat(role, content) {
+            const chatHistory = document.getElementById('chatHistory');
+
+            // Remove placeholder if exists
+            if (chatHistory.children.length === 1 && chatHistory.children[0].style.textAlign === 'center') {
+                chatHistory.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            let roleLabel = role === 'user' ? 'You' : role === 'assistant' ? 'Assistant' : 'Error';
+            let statusBadge = '';
+
+            if (content.includes('Success')) {
+                statusBadge = '<span class="status-badge success">Success</span>';
+            } else if (role === 'error') {
+                statusBadge = '<span class="status-badge error">Error</span>';
+            }
+
+            messageDiv.innerHTML = `
+                <div class="message-role">${roleLabel}${statusBadge}</div>
+                <div class="message-content">${content}</div>
+            `;
+
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function showGeneratedImages(imagePaths) {
+            const resultSection = document.getElementById('resultSection');
+            const imagesGrid = document.getElementById('imagesGrid');
+
+            // Clear previous images
+            imagesGrid.innerHTML = '';
+
+            // Add each image to the grid
+            imagePaths.forEach((imagePath, index) => {
+                const imageCard = document.createElement('div');
+                imageCard.className = 'image-card';
+                
+                imageCard.innerHTML = `
+                    <div class="image-label">Variant ${index + 1}</div>
+                    <img src="${API_BASE_URL}/image/${imagePath}" alt="UGC Variant ${index + 1}">
+                `;
+                
+                imagesGrid.appendChild(imageCard);
+            });
+
+            resultSection.style.display = 'block';
+
+            // Reset feedback buttons
+            document.getElementById('thumbsUpBtn').classList.remove('active');
+            document.getElementById('thumbsDownBtn').classList.remove('active');
+        }
+
+        function showTraceLink(traceUrl) {
+            if (traceUrl) {
+                const traceLink = document.getElementById('traceLink');
+                const traceLinkUrl = document.getElementById('traceLinkUrl');
+
+                traceLinkUrl.href = traceUrl;
+                traceLink.style.display = 'block';
+            }
+        }
+
+        function extractRunIdFromTraceUrl(traceUrl) {
+            if (!traceUrl) return null;
+            const parts = traceUrl.split('/r/');
+            return parts.length > 1 ? parts[1] : null;
+        }
+
+        async function submitFeedback(feedbackType) {
+            if (!conversationId) {
+                alert('No conversation to provide feedback for');
+                return;
+            }
+
+            if (!currentRunId) {
+                alert('Unable to submit feedback: trace ID not available');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/feedback/${conversationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        feedback_type: feedbackType,
+                        run_id: currentRunId,
+                        comment: feedbackType === 'thumbs_up' ? 'Good image' : 'Needs improvement'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Highlight selected button
+                document.getElementById('thumbsUpBtn').classList.remove('active');
+                document.getElementById('thumbsDownBtn').classList.remove('active');
+
+                if (feedbackType === 'thumbs_up') {
+                    document.getElementById('thumbsUpBtn').classList.add('active');
+                } else {
+                    document.getElementById('thumbsDownBtn').classList.add('active', 'thumbs-down');
+                }
+
+                console.log('Feedback submitted:', data);
+
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                alert('Failed to submit feedback');
+            }
+        }
+
+        // Allow Enter key to submit (Shift+Enter for new line)
+        document.getElementById('messageInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateImage();
+            }
+        });
+    </script>
+</body>
+</html>

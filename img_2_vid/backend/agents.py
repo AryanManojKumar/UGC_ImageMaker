@@ -9,26 +9,12 @@ from tools import (
 import os
 
 # Configure LLM to use AIML API
+# All agents should use GPT-4o for reasoning/decision making
 llm = LLM(
     model="openai/gpt-4o",
     api_key=os.getenv("AIML_API_KEY"),
     base_url="https://api.aimlapi.com/v1/"
 )
-
-llm_11 = LLM(
-    model="elevenlabs/v3_alpha",
-    api_key=os.getenv("AIML_API_KEY"),
-    base_url="https://api.aimlapi.com/v1/"
-)
-
-llm_v = LLM(
-    model="google/veo-3.1-i2v",
-    api_key=os.getenv("AIML_API_KEY"),
-    base_url="https://api.aimlapi.com/v1/"
-)
-
-
-
 
 def create_script_agent():
     """Agent for image analysis and script generation"""
@@ -39,8 +25,8 @@ def create_script_agent():
         and cinematography. You excel at analyzing images and crafting engaging narratives
         that translate perfectly to video format with proper pacing.""",
         tools=[analyze_image_tool],
-        llm=llm,  # Add this
-        verbose=True,
+        llm=llm,
+        verbose=False,  # Reduce agent chatter
         allow_delegation=False
     )
 
@@ -54,8 +40,8 @@ def create_audio_agent():
         production and text-to-speech optimization. You ensure perfect audio quality
         and calculate exact timing requirements for video synchronization.""",
         tools=[generate_audio_tool],
-        llm=llm_11,  # Add this
-        verbose=True,
+        llm=llm,
+        verbose=False,  # Reduce agent chatter
         allow_delegation=False
     )
 
@@ -70,8 +56,8 @@ def create_video_agent():
         style across multiple video clips. You craft detailed prompts that result in
         cohesive visual storytelling.""",
         tools=[generate_video_clip_tool],
-        llm=llm_v,  # Add this
-        verbose=True,
+        llm=llm,
+        verbose=False,  # Reduce agent chatter
         allow_delegation=False
     )
 
@@ -85,7 +71,8 @@ def create_assembly_agent():
         processing. You ensure smooth transitions, perfect timing, and high-quality
         output in all your video assemblies.""",
         tools=[assemble_video_tool],
-        verbose=True,
+        llm=llm,
+        verbose=False,  # Reduce agent chatter
         allow_delegation=False
     )
 
@@ -99,6 +86,7 @@ def create_lipsync_agent():
         character mouth movements perfectly match audio narration using state-of-the-art
         AI models. You deliver the final polished product.""",
         tools=[apply_lip_sync_tool],
-        verbose=True,
+        llm=llm,
+        verbose=False,  # Reduce agent chatter
         allow_delegation=False
     )

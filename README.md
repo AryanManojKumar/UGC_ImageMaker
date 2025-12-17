@@ -49,7 +49,7 @@ python server_with_langsmith.py
 ```
 
 The server will start at `http://localhost:8000`
-
+and then open the index.html file to use the frontend 
 **API Endpoints:**
 
 - `POST /chat/ugc/upload` - Upload images and generate UGC content

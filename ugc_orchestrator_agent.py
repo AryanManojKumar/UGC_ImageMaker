@@ -48,7 +48,8 @@ def create_ugc_orchestrator_agent():
         llm = LLM(
             model="openai/gpt-5-2025-08-07",
             api_key=os.getenv("AIML_API_KEY"),
-            base_url="https://api.aimlapi.com/v1"
+            base_url="https://api.aimlapi.com/v1",
+            temperature=0.7
         )
         llm_trace.outputs = {"llm": "openai/gpt-5-2025-08-07"}
 

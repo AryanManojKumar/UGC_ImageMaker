@@ -22,7 +22,7 @@ AI-powered UGC (User Generated Content) image generator that creates 4 diverse p
 2. Install dependencies:
 
 ```bash
-pip install crewai fastapi uvicorn requests python-dotenv langsmith openai pydantic
+pip install crewai==1.6.1 crewai-tools==1.6.1 fastapi uvicorn requests python-dotenv langsmith langchain-openai pydantic
 ```
 
 3. Create `.env` file from example:

@@ -42,22 +42,69 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("🎙️ Voice Settings")
     
+    # ElevenLabs Configuration (Default)
     voice_model = st.selectbox(
-        "Voice Model",
+        "ElevenLabs Model",
         [
-            "aura-asteria-en",
-            "aura-luna-en",
-            "aura-stella-en",
-            "aura-athena-en",
-            "aura-hera-en",
-            "aura-orion-en",
-            "aura-arcas-en",
-            "aura-perseus-en",
-            "aura-angus-en",
-            "aura-orpheus-en"
+            "eleven_turbo_v2_5",        # Fast, 3x faster
+            "eleven_multilingual_v2"     # High quality, 29 languages
         ],
-        help="Select TTS voice model"
+        index=0,  # Default to turbo
+        help="Select ElevenLabs TTS model (via AIML API)"
     )
+    
+    voice_name = st.selectbox(
+        "Voice",
+        [
+            "Rachel", "Nicole", "Aria", "Emily", "Jessica",  # Female voices first
+            "Drew", "Clyde", "Paul", "Dave", "Roger",        # Male voices
+            "Fin", "Sarah", "Antoni", "Laura", "Thomas", 
+            "Charlie", "George", "Elli", "Callum", "Patrick", 
+            "River", "Harry", "Liam", "Dorothy", "Josh", 
+            "Arnold", "Charlotte", "Alice", "Matilda", "James", 
+            "Joseph", "Will", "Jeremy", "Eric", "Michael",
+            "Ethan", "Chris", "Gigi", "Freya", "Brian", 
+            "Grace", "Daniel", "Lily", "Serena", "Adam", 
+            "Bill", "Jessie", "Sam", "Glinda", "Giovanni", "Mimi"
+        ],
+        index=0,  # Default to Rachel
+        help="Select ElevenLabs voice character"
+    )
+    
+    # Advanced settings (collapsed by default)
+    with st.expander("🎚️ Advanced Voice Settings"):
+        stability = st.slider(
+            "Stability",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.5,
+            step=0.05,
+            help="Higher values = more consistent, Lower = more expressive"
+        )
+        
+        similarity_boost = st.slider(
+            "Similarity Boost",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.75,
+            step=0.05,
+            help="How closely to match the original voice"
+        )
+        
+        style = st.slider(
+            "Style",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.0,
+            step=0.05,
+            help="Exaggeration of the voice style"
+        )
+        
+        use_speaker_boost = st.checkbox(
+            "Use Speaker Boost",
+            value=True,
+            help="Boost similarity to the speaker"
+        )
 
 # Main workflow
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -95,13 +142,10 @@ with tab1:
         if st.button("🚀 Analyze Image & Generate Script", type="primary"):
             with st.spinner("Analyzing image and generating script..."):
                 try:
-                    files = {"file": uploaded_file.getvalue()}
-                    data = {"duration": video_duration}
-                    
                     response = requests.post(
                         f"{API_BASE_URL}/api/analyze-image",
                         files={"file": (uploaded_file.name, uploaded_file.getvalue())},
-                        data=data
+                        data={"duration": video_duration}
                     )
                     
                     if response.status_code == 200:
@@ -180,15 +224,25 @@ with tab3:
         with col2:
             st.info(f"""
             **Audio Settings:**
-            - Voice Model: {voice_model}
+            - Provider: ElevenLabs
+            - Model: {voice_model}
+            - Voice: {voice_name}
             - Estimated Duration: ~{script['estimated_duration']}s
             """)
         
         if st.button("🎵 Generate Audio Preview", type="primary"):
-            with st.spinner("Generating audio..."):
+            with st.spinner("Generating audio with ElevenLabs..."):
                 try:
+                    # Prepare ElevenLabs voice settings
                     voice_settings = {
-                        "model": voice_model
+                        "model": voice_model,
+                        "voice": voice_name,
+                        "voice_settings": {
+                            "stability": stability,
+                            "similarity_boost": similarity_boost,
+                            "style": style,
+                            "use_speaker_boost": use_speaker_boost
+                        }
                     }
                     
                     response = requests.post(
@@ -339,6 +393,6 @@ with tab4:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center'>
-    <p>Powered by AIML API, Sync.so, and CrewAI</p>
+    <p>Powered by AIML API (GPT-4o Vision, ElevenLabs Turbo v2.5, Veo 3.1), Sync.so, and CrewAI</p>
 </div>
 """, unsafe_allow_html=True)
